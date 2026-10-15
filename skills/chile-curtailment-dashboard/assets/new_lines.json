@@ -1,0 +1,15 @@
+{
+  "_note": "Transmission projects shown on the map. type 'line': 'ids' are line codes in the latest Chile nodal topology (public.lines.line); if none exist any more, 'name_regex' is matched against public.lines.linefullname. type 'substation': drawn as a marker at 'node' (public.nodes.node); 'name_regex' unused. 'source' says where the year comes from. Years follow the Central scenario of the Q3 2026 PRMF report (p.39) unless stated otherwise.",
+  "projects": [
+    {"key": "parinas", "type": "substation", "label": "Parinas 500/220 kV", "legend": "Parinas 500/220 kV transformer · 2027", "year": 2027,
+     "node": "22", "source": "Q3 2026 PRMF p.39 'Parinas (Norte Grande connect)'; model: Parinas 500/220 kV transformer 750 → 1,500 MW (second 750 MW unit mid-2027, Q2 2026 PRMF p.81). The 500 kV lines into Parinas already exist and stay in the background grid."},
+    {"key": "up220_30", "type": "line", "label": "220 kV upgrades", "legend_group": "up220", "year": 2030, "width": 2,
+     "ids": ["l_158", "l_268"], "name_regex": null, "source": "Model only: 220 kV capacity increases in the Q3 Central nodal run."},
+    {"key": "up220_31", "type": "line", "label": "220 kV upgrades", "legend": "220 kV upgrades (model) · 2030–31", "legend_group": "up220", "year": 2031, "width": 2,
+     "ids": ["l_166", "l_327", "l_328", "l_329", "l_330"], "name_regex": null, "source": "Model only: new Maule–Biobío 220 kV lines in the Q3 Central nodal run."},
+    {"key": "hvdc", "type": "line", "label": "Kimal–Lo Aguirre HVDC", "legend": "Kimal–Lo Aguirre HVDC · 2032", "year": 2032, "width": 2.4, "hvdc": true,
+     "ids": ["DC_FROM_NODE_220_TO_NODE_140", "DC_FROM_NODE_140_TO_NODE_220"], "name_regex": "^DC_FROM_NODE", "source": "Q3 2026 PRMF p.39; model: 0 → 3,000 MW in 2032."},
+    {"key": "tineo", "type": "line", "label": "Pichirropulli–Tineo 500 kV", "legend": "Pichirropulli–Tineo energised at 500 kV · 2035", "year": 2035, "width": 2.4,
+     "ids": ["l_263B"], "name_regex": "Pichirropulli.*Tineo|Tineo.*Pichirropulli", "source": "Q3 2026 PRMF p.39 'Tineo (South connect)'; Q2 2026 PRMF p.81: existing Nueva Pichirropulli–Tineo line energised at 500 kV with new transformers at Tineo."}
+  ]
+}
