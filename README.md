@@ -16,6 +16,7 @@ Available skills:
 
 - `aurora-power-market-analysis`
 - `aus-battery-investment-case`
+- `chile-curtailment-dashboard`
 - `gb-battery-investment-case`
 
 ## Download a package
