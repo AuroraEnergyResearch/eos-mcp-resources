@@ -3,7 +3,7 @@
 
 Usage:
   python assemble.py <dash.json> <geo.json> <out.html> --report "Chilean Power and Renewables Market Forecast Q3 2026"
-                     --nodal "CHL Nodal FYR 05623a-NODAL" [--scenario Central]
+                     --nodal "Chile Q3 26 (Central)" [--scenario Central]
 """
 import argparse, json, os, re
 
@@ -14,7 +14,7 @@ ap.add_argument("dash")
 ap.add_argument("geo")
 ap.add_argument("out")
 ap.add_argument("--report", required=True, help="Report title exactly as listed in EOS")
-ap.add_argument("--nodal", required=True, help="Name of the Chile nodal scenario used for nodes and lines")
+ap.add_argument("--nodal", required=True, help="Scenario Explorer nodal scenario the nodes came from, e.g. \"Chile Q3 26 (Central)\"")
 ap.add_argument("--scenario", default="Central")
 a = ap.parse_args()
 

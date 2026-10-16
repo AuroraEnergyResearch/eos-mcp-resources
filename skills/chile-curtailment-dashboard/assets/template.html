@@ -156,7 +156,7 @@ const D = __DATA__;
 const G = __GEO__;
 const META = __META__;
 document.getElementById("ctx").innerHTML=`Chile, ${META.scenario} scenario<br>${META.edition} forecast`;
-document.getElementById("foot").textContent=`Source: Aurora Energy Research, ${META.report} databook (${META.scenario} and Zonal ${META.scenario} sheets). Curtailed TWh = generation × p / (1 − p), using fleet-wide curtailment % by hub. Nodes and lines: data platform scenario "${META.nodal}" (latest Chile nodal run).`;
+document.getElementById("foot").textContent=`Source: Aurora Energy Research, ${META.report} databook (${META.scenario} and Zonal ${META.scenario} sheets). Curtailed TWh = generation × p / (1 − p), using fleet-wide curtailment % by hub. Nodes: Scenario Explorer nodal scenario "${META.nodal}". Transmission projects are placed at their substations; links are schematic.`;
 const YEARS = D.years, N = YEARS.length, STEP = 4000;
 const RAMP = ["#FBEFA0","#F7D35E","#F2A43A","#E2702B","#C9421F","#8E1D1A"];
 const CMAX = Math.max(0.5, Math.ceil(Math.max(...D.hubs.flatMap(h=>h.curt))*10)/10);

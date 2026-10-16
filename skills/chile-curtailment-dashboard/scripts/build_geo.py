@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
-"""Build the map geometry for the dashboard from data-platform node and line extracts.
+"""Build the map geometry for the dashboard from the Scenario Explorer node list.
 
 Usage:
-  python build_geo.py <nodes.csv> <lines.csv> <out.json>
+  python build_geo.py <nodes.csv> <out.json>
 
-nodes.csv columns: region,node,lat4,lon4      (lat/lon multiplied by 10000, integers)
-lines.csv columns: line,linefullname,s,t,kv   (s/t = source/target node codes)
+nodes.csv columns: region,node,lat4,lon4   (written by se_nodes.py; lat/lon x 10000)
 
-Virtual nodes (no coordinates) must already be filtered out by the SQL.
 Hub areas are the nodes' nearest-node (Voronoi) cells, clipped to the coastline
-and merged per hub. New transmission projects come from assets/new_lines.json.
+and merged per hub. Transmission projects come from assets/projects.json and are
+placed at substations matched by node name. No grid lines are drawn.
 """
 import csv, json, math, os, re, sys
 import numpy as np
@@ -20,7 +19,7 @@ from scipy.spatial import Voronoi
 HERE = os.path.dirname(os.path.abspath(__file__))
 ASSETS = os.path.join(HERE, "..", "assets")
 HUB = json.load(open(os.path.join(ASSETS, "hubs.json"), encoding="utf-8"))
-CFG = json.load(open(os.path.join(ASSETS, "new_lines.json"), encoding="utf-8"))
+CFG = json.load(open(os.path.join(ASSETS, "projects.json"), encoding="utf-8"))
 
 LATMAX, LATMIN, LONMIN, LONMAX = -17.3, -43.9, -75.2, -66.3
 K = 27.0
@@ -47,7 +46,7 @@ def svg_path(g):
     return "".join(out)
 
 
-def main(nodes_csv, lines_csv, out):
+def main(nodes_csv, out):
     nodes = {}
     for r in csv.DictReader(open(nodes_csv, encoding="utf-8")):
         code = r["region"].replace("CHL_", "")
@@ -95,62 +94,42 @@ def main(nodes_csv, lines_csv, out):
             seen.add(k)
             node_out.append([k[0], k[1], code])
 
-    # lines
-    lines = list(csv.DictReader(open(lines_csv, encoding="utf-8")))
-    ids_present = {l["line"] for l in lines}
-    assign = {}
-    report = []
-    subs = {}
+    # projects, placed at substations matched by node name
+    def find(rx):
+        r = re.compile(rx, re.I)
+        hit = sorted(n for n in nodes if r.search(n))
+        return (hit[0], P(*nodes[hit[0]][1:])) if hit else (None, None)
+
+    new, report = {}, []
     for p in CFG["projects"]:
-        if p.get("type") == "substation":
-            if p["node"] in nodes:
-                x, y = P(*nodes[p["node"]][1:])
-                subs[p["key"]] = [[round(x, 1), round(y, 1)]]
-                report.append(f"{p['key']:9s} {p['year']}  substation marker at node {p['node']}")
+        if p["type"] == "substation":
+            name, xy = find(p["match"])
+            if xy:
+                new[p["key"]] = [[round(xy[0], 1), round(xy[1], 1)]]
+                report.append(f"{p['key']:8s} {p['year']}  marker at {name}")
             else:
-                report.append(f"{p['key']:9s} {p['year']}  NODE {p['node']} NOT FOUND")
-            continue
-        matched = [i for i in p["ids"] if i in ids_present]
-        if not matched and p.get("name_regex"):
-            rx = re.compile(p["name_regex"])
-            matched = [l["line"] for l in lines if rx.search(l.get("linefullname") or "")]
-        for m in matched:
-            assign[m] = p["key"]
-        report.append(f"{p['key']:9s} {p['year']}  {len(matched)} line(s): {', '.join(matched) or 'NONE FOUND'}")
-
-    base, new, pairs = [], {}, set()
-    for l in lines:
-        s_, t_ = l["s"], l["t"]
-        if s_ not in nodes or t_ not in nodes:
-            continue
-        x1, y1 = P(*nodes[s_][1:])
-        x2, y2 = P(*nodes[t_][1:])
-        if abs(x1 - x2) + abs(y1 - y2) < 0.5:
-            continue  # transformers and co-located nodes
-        pair = (assign.get(l["line"], "base"),) + tuple(sorted((s_, t_)))
-        if pair in pairs:
-            continue  # parallel circuits / both HVDC directions
-        pairs.add(pair)
-        kv = int(float(l["kv"])) if l.get("kv") not in (None, "", "None") else 0
-        seg = [round(x1, 1), round(y1, 1), round(x2, 1), round(y2, 1), kv]
-        if l["line"] in assign:
-            new.setdefault(assign[l["line"]], []).append(seg)
+                report.append(f"{p['key']:8s} {p['year']}  NO NODE MATCHES '{p['match']}'")
         else:
-            base.append(seg)
+            (n1, a1), (n2, a2) = find(p["from"]), find(p["to"])
+            if a1 and a2:
+                new[p["key"]] = [[round(a1[0], 1), round(a1[1], 1), round(a2[0], 1), round(a2[1], 1), 500]]
+                report.append(f"{p['key']:8s} {p['year']}  link {n1} -> {n2}")
+            else:
+                miss = [rx for rx, a in ((p["from"], a1), (p["to"], a2)) if not a]
+                report.append(f"{p['key']:8s} {p['year']}  NO NODE MATCHES {miss}")
 
-    new.update(subs)
     W, H = (LONMAX - LONMIN) * C * K, (LATMAX - LATMIN) * K
     geo = {"W": round(W, 1), "H": round(H, 1), "chile": svg_path(chile_p.simplify(0.6)),
            "neigh": svg_path(neigh_p.simplify(0.8)), "hubs": hubs, "nodes": node_out,
-           "base": base, "new": new, "projects": CFG["projects"]}
+           "base": [], "new": new, "projects": CFG["projects"]}
     json.dump(geo, open(out, "w", encoding="utf-8"), ensure_ascii=False)
-    print(f"{len(nodes)} nodes, {len(node_out)} map points, {len(base)} grid segments")
-    print("New lines:")
+    print(f"{len(nodes)} nodes, {len(node_out)} map points, {len(hubs)} hubs")
+    print("Projects:")
     for r in report:
         print("  " + r)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
+    if len(sys.argv) != 3:
         sys.exit(__doc__)
     main(*sys.argv[1:])

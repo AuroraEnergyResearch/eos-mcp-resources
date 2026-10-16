@@ -1,0 +1,11 @@
+{
+  "_note": "Published transmission projects shown on the map, placed at substations from the Scenario Explorer node list. 'match', 'from' and 'to' are case-insensitive regexes on the node name; the first matching node with a location is used. type 'substation': a marker at 'match'. type 'link': a straight line from 'from' to 'to' (schematic, not the real route). Years follow the Central scenario of the Q3 2026 PRMF report (p.39) unless 'source' says otherwise.",
+  "projects": [
+    {"key": "parinas", "type": "substation", "label": "Parinas 500/220 kV", "legend": "Parinas 500/220 kV transformer · 2027", "year": 2027,
+     "match": "PARINAS", "source": "Q3 2026 PRMF p.39 'Parinas (Norte Grande connect)'; second 750 MW transformer unit mid-2027 per Q2 2026 PRMF p.81."},
+    {"key": "hvdc", "type": "link", "label": "Kimal–Lo Aguirre HVDC", "legend": "Kimal–Lo Aguirre HVDC · 2032", "year": 2032, "width": 2.4, "hvdc": true,
+     "from": "KIMAL 500", "to": "LO AGUIRRE 500", "source": "Q3 2026 PRMF p.39."},
+    {"key": "tineo", "type": "link", "label": "Pichirropulli–Tineo 500 kV", "legend": "Pichirropulli–Tineo energised at 500 kV · 2035", "year": 2035, "width": 2.4,
+     "from": "NUEVA PICHIRROPULLI", "to": "TINEO", "source": "Q3 2026 PRMF p.39 'Tineo (South connect)'; Q2 2026 PRMF p.81: existing Nueva Pichirropulli–Tineo line energised at 500 kV."}
+  ]
+}
