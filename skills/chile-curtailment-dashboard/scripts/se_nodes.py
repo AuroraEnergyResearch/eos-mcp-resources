@@ -4,7 +4,7 @@
 Usage:
   python se_nodes.py <options.json> <nodes.csv>
 
-options.json is the result of scenario_explorer_get_scenario_options with verbose
+options.json is the result of scenario_explorer_get_scenario_option with verbose
 true for region "chl": either the whole {"results": [...]} object, one result
 ({"nodes": [...]}) or the bare nodes array.
 

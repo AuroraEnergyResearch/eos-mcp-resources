@@ -24,8 +24,8 @@ Copy the skill folder somewhere writable (e.g. `/home/claude/ccd` or a scratchpa
 ## Step 1 — Download the databook
 
 1. `content_list_content` with `search: "Chilean Power and Renewables Market Forecast"` (newest first). Use the report the user named, else the newest. Note its exact title, e.g. "Chilean Power and Renewables Market Forecast Q3 2026".
-2. `content_get_content_downloads` for that content id; the file you want is titled **"Data"** (xlsx) — "Granular Data" and the PDF are different files.
-3. `content_get_download_url` with the content id, `file_title: "Data"`, `file_type: "xlsx"`, `file_language_code: "en"`, then `curl -s -o databook.xlsx "<url>"` (quote the URL; it expires in 2 hours).
+2. `content_get_content_downloads` with `requests: [{"content_id": <id>}]`; the file you want is titled **"Data"** (xlsx) — "Granular Data" and the PDF are different files.
+3. `content_get_download_url` with `requests: [{"content_id": <id>, "file_title": "Data", "file_type": "xlsx", "file_language_code": "en"}]`, then `curl -s -o databook.xlsx "<url>"` (quote the URL; it expires in 2 hours).
 
 ## Step 2 — Parse the databook
 
@@ -42,7 +42,7 @@ The definitions are agreed with the dashboard owner and stay as they are:
 ## Step 3 — Get the nodes from Scenario Explorer
 
 1. `scenario_explorer_list_scenarios` with `region_code: "chl"`. Pick the `nodal_output` Central scenario from the same quarter as the databook (e.g. "Chile Q3 26 (Central)" for the Q3 2026 report). If that quarter has none, take the newest Central nodal scenario and tell the user the quarters differ. Note its `hash` and `name`.
-2. `scenario_explorer_get_scenario_options` with that `scenario_hash`, `region: "chl"`, `sensitivity: "central"`, `verbose: true`. The result is large (~100k characters) because it includes every node with its region and location. Save it as JSON — if the harness has already written it to a file, use that file; otherwise write the result to `work/se_options.json`.
+2. `scenario_explorer_get_scenario_option` with `requests: [{"scenario_hash": "<hash>", "region": "chl", "sensitivity": "central", "verbose": true}]`. The result is large (~100k characters) because it includes every node with its region and location. Save it as JSON — if the harness has already written it to a file, use that file; otherwise write the result to `work/se_options.json`.
 3. Convert it:
 
 ```bash
