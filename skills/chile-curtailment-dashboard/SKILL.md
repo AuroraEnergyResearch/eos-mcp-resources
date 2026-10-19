@@ -86,7 +86,7 @@ python scripts/assemble.py work/dash.json work/geo.json <outputs>/chile_curtailm
 
 ### Optional check script
 
-If you have playwrightt installed, you can also run the tests/check.py script:
+If you have playwright installed (`pip install playwright; playwright install`), you can also run the tests/check.py script:
 
 ```bash
 python tests/check.py <outputs>/chile_curtailment_dashboard.html work/shot
