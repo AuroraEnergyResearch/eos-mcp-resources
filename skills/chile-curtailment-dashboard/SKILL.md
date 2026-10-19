@@ -16,10 +16,18 @@ Every input comes from published Aurora products: the PRMF databook (Content) an
 ## Requirements
 
 - Aurora Energy Research (EOS) MCP connector with access to Chile PRMF content and Chile nodal scenarios in Scenario Explorer.
-- Python: `pip install openpyxl shapely scipy` (add `--break-system-packages` in a managed sandbox). Playwright is optional, for the visual check.
+- Python installed with pip and venv capabilities.
 - Network access to `aer-content-production.s3.eu-west-2.amazonaws.com` for the presigned databook URL.
 
 Copy the skill folder somewhere writable (e.g. `/home/claude/ccd` or a scratchpad) and run everything from there.
+
+## Step 0 - Install dependencies
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
 
 ## Step 1 — Download the databook
 
@@ -72,10 +80,17 @@ For a new PRMF quarter, check the years against the report's transmission assump
 ```bash
 python scripts/assemble.py work/dash.json work/geo.json <outputs>/chile_curtailment_dashboard.html \
   --report "<exact report title>" --nodal "<nodal scenario name from step 3>" --scenario Central
-python scripts/check.py <outputs>/chile_curtailment_dashboard.html work/shot   # optional, needs playwright
 ```
 
 `<outputs>` is the user-facing outputs folder (`/mnt/user-data/outputs` in the claude.ai sandbox).
+
+### Optional check script
+
+If you have playwrightt installed, you can also run the tests/check.py script:
+
+```bash
+python tests/check.py <outputs>/chile_curtailment_dashboard.html work/shot
+```
 
 The render passes when `work/shot_first.png` and `work/shot_last.png` show no JS errors, 16 shaded and labelled hubs, battery circles and a 16-row ranking, and the last year shows the Parinas marker and both links. Then share the HTML with the user (`present_files` in the claude.ai sandbox).
 
@@ -92,7 +107,7 @@ A short prose summary:
 - `scripts/se_nodes.py` — Scenario Explorer options JSON → `nodes.csv`.
 - `scripts/build_geo.py` — nodes → `geo.json`; hub areas are nearest-node cells clipped to the coastline, projects placed at matched substations.
 - `scripts/assemble.py` — injects the data into `assets/template.html`.
-- `scripts/check.py` — optional headless render and screenshots.
+- `tests/check.py` — optional headless render and screenshots. Requires playwright to run; not required for this demo.
 - `assets/projects.json` — published transmission projects: type, node-name regexes, years and the source of each year.
 - `assets/hubs.json` — region code → hub name.
 - `assets/outline.geojson` — simplified Chile and neighbour outlines.
