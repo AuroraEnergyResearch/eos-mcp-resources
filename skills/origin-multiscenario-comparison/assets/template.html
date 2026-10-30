@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__</title>
+<script>__CHARTJS__</script>
+<style>
+:root{
+  /* Aurora Substrate v2.1.0 tokens, dark theme (eos semantic tokens read from the package CSS; values copied, nothing imported) */
+  --bg:#09090b;            /* surface-canvas */
+  --card:#18181b;          /* surface-elevated */
+  --card-2:#313135;        /* surface-interactive (inputs, hover) */
+  --border:#212124;        /* border-default */
+  --border-2:#313135;      /* border-input / border-strong */
+  --text:#f4f4f5; --text-2:#d4d4d8; --mut:#9f9fa9;   /* chart-text-primary, text-primary, text-muted */
+  --axis:#e4e4e7;          /* chart-text-axis */
+  --gold:#ffd63a; --accent:#ffd63a; --on-gold:#09090b;  /* action-primary, text-inverse */
+  --orange:#F59E00; --charcoal:#3C3C3B; --red:#ff6467;  /* status-danger */
+  --grid:#212124;          /* gridlines: border-default (Substrate draws them very faint) */
+  --axisline:#52525c;      /* chart-border-muted */
+  --zero:#71717b;          /* chart-border-zero */
+  --notice:#2a2614; --warn-bg:#2c1b16; --warn-text:#ff6467;
+  --tip-bg:#18181b; --tip-text:#f4f4f5; --tip-border:#3f3f46;  /* chart-bg-raised, chart-border-subtle */
+  --chart-font:Lato,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol",sans-serif;  /* Substrate chart font stack */
+  --radius:7px; --radius-sm:7px; --radius-tip:5px;  /* --radius .5625rem at Substrate's 80% root size, rendered */
+  color-scheme: dark;
+}
+:root[data-theme=light]{
+  /* Substrate light theme (:root/.light semantic tokens) */
+  --bg:#f4f4f5;            /* surface-subtle */
+  --card:#fafafa;          /* surface-canvas / chart-bg-base */
+  --card-2:#f4f4f5;        /* surface-interactive */
+  --border:#d4d4d8; --border-2:#d4d4d8;   /* border-strong / border-input */
+  --text:#09090b; --text-2:#3f3f46; --mut:#71717b;
+  --axis:#3f3f46;
+  --gold:#e6b800; --accent:#996e00; --on-gold:#09090b;
+  --red:#c10007;
+  --grid:#e4e4e7;         /* chart-border-subtle */
+  --axisline:#d4d4d8;     /* chart-border-muted */
+  --zero:#9f9fa9;         /* chart-border-zero */
+  --notice:#fff7d6; --warn-bg:#fef2f2; --warn-text:#c10007;
+  --tip-bg:#f4f4f5; --tip-text:#09090b; --tip-border:#d4d4d8;
+  color-scheme: light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Lato,"Segoe UI",system-ui,sans-serif;font-size:14px;line-height:1.45}
+header{padding:18px 28px 14px;border-bottom:1px solid var(--border);background:var(--card)}
+header h1{font-size:21px;font-weight:700;margin:0 0 4px}
+header .meta{color:var(--mut);font-size:12.5px;margin-bottom:12px}
+nav{display:flex;gap:22px}
+nav a{color:var(--text-2);text-decoration:none;font-size:13px;padding:6px 0 9px;border-bottom:2px solid transparent}
+nav a:hover{color:var(--accent);border-bottom-color:var(--gold)}
+main{padding:20px 28px 40px;max-width:1500px}
+.notice{border-left:3px solid var(--gold);background:var(--notice);padding:10px 14px;border-radius:var(--radius-sm);margin-bottom:10px;font-size:13px;color:var(--text-2)}
+.notice strong{color:var(--accent)}
+.warn{border-left-color:var(--red);background:var(--warn-bg)}
+.warn strong{color:var(--warn-text)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start;margin-top:16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px 16px;margin-bottom:16px}
+.card h2{font-size:16px;font-weight:700;margin:0}
+.card .unit{color:var(--mut);font-size:12px;margin:2px 0 10px}
+.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.chart{position:relative;height:300px}
+.ctip{position:fixed;z-index:1000;left:0;top:0;opacity:0;pointer-events:none;background:var(--tip-bg);color:var(--tip-text);border:1px solid var(--tip-border);border-radius:var(--radius-tip);padding:8px 10px;font-size:12px;line-height:1.3;box-shadow:0 2px 6px rgba(0,0,0,.25);font-family:var(--chart-font);width:max-content;max-width:calc(100vw - 16px)}
+.ctip-title{font-size:10px;font-weight:400;margin-bottom:4px}
+.ctip-row b{font-weight:700}
+.ctip-row{display:flex;align-items:center;gap:6px;padding:1px 0;break-inside:avoid;white-space:nowrap}
+.ctip-row img{flex:none}
+.side{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow-y:auto}
+.lcol{display:flex;flex-direction:column;min-width:0}
+.lid{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:10.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;user-select:all;cursor:text}
+.lgroup{display:flex;flex-direction:column;gap:1px;padding:9px 2px 4px;margin-top:6px;border-top:1px solid var(--border);cursor:pointer;color:var(--text);font-weight:700;font-size:13px;user-select:none}
+.lgroup.off{opacity:.45}
+.zrow{padding-left:12px}
+.zchips{display:flex;flex-wrap:wrap;gap:4px;margin:2px 0 6px}
+.zchips .btn{padding:2px 8px;font-size:11.5px}
+.zlabel{font-size:11.5px;color:var(--mut);margin:8px 0 2px}
+.legend-row{user-select:none;display:flex;align-items:center;gap:8px;padding:5px 2px;font-size:13px;color:var(--text-2);cursor:pointer;border-radius:var(--radius-sm)}
+.legend-row:hover{background:var(--card-2)}
+.legend-row.off{opacity:.35}
+.legend-row.off .lname{text-decoration:line-through}
+.legend-row input[type=color]{width:20px;height:20px;border:0;padding:0;background:none;cursor:pointer;flex:none}
+.legend-row canvas{flex:none}
+.lname{overflow:hidden;text-overflow:ellipsis}
+.btn{font:inherit;font-size:12px;color:var(--text-2);background:transparent;border:1px solid var(--border-2);border-radius:var(--radius-sm);padding:5px 10px;cursor:pointer}
+.btn:hover{background:var(--card-2);color:var(--text)}
+.btn.on{background:var(--gold);border-color:var(--gold);color:var(--on-gold)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.ctrl{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
+.ctrl-label{font-size:12px;color:var(--mut);margin-top:12px}
+.tabs{display:flex;flex-wrap:wrap;gap:4px 18px;border-bottom:1px solid var(--border);margin-bottom:10px}
+.tab{font:inherit;font-size:13px;background:none;border:0;border-bottom:2px solid transparent;color:var(--text-2);padding:6px 0 8px;cursor:pointer}
+.tab.active{color:var(--accent);border-bottom-color:var(--gold)}
+select{font:inherit;font-size:13px;background:var(--card-2);color:var(--text);border:1px solid var(--border-2);border-radius:var(--radius-sm);padding:6px 8px}
+.add-row{display:flex;gap:8px;align-items:center}
+.add-row select{flex:1}
+.x{font-size:18px;line-height:1;padding:2px 8px}
+.icon{display:inline-flex;align-items:center;gap:5px;padding:5px 7px}
+.icon .lbl:empty{display:none}
+.seg-row{margin:2px 0 10px}
+.ctrl-rows{display:flex;flex-direction:column;gap:8px;margin:4px 0 12px}
+.ctrl-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ctrl-name{font-size:12.5px;color:var(--mut);width:88px;flex:none}
+.year-row{font-size:13px;color:var(--text-2)}
+.year-row input{flex:1;max-width:520px;accent-color:var(--gold)}
+.year-row output{font-weight:700;color:var(--accent);min-width:3em;font-size:15px}
+.cg-note{font-size:12px;color:var(--mut);margin:0 0 8px;min-height:0}
+.cg-note:empty{display:none}
+#cg.mix .cg-lines-only{display:none} #cg:not(.mix) .cg-mix-only{display:none}
+.head-ctrls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.seg{display:inline-flex}.seg .btn{border-radius:0}.seg .btn:first-child{border-radius:4px 0 0 4px}.seg .btn:last-child{border-radius:0 4px 4px 0;margin-left:-1px}
+.empty{color:var(--mut);font-size:13px;padding:30px 0;text-align:center}
+footer{color:var(--mut);font-size:11.5px;margin-top:8px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.idtable{width:100%;border-collapse:collapse;font-size:13px}
+.idtable th{text-align:left;font-weight:700;color:var(--mut);font-size:12px;padding:6px 10px;border-bottom:1px solid var(--border-2)}
+.idtable td{padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text-2);vertical-align:middle}
+.idtable tr:last-child td{border-bottom:0}
+.idtable .id{white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;user-select:all}
+.idtable .key{display:flex;align-items:center;gap:6px}
+.idtable .chip{width:14px;height:14px;border-radius:3px;flex:none}
+.idtable tr.skipped td{color:var(--mut)}
+.tablewrap{overflow-x:auto}
+@media (max-width:900px){.layout{grid-template-columns:1fr}.side{position:static}}
+</style>
+</head>
+<body>
+<header>
+  <div class="top"><div><h1>__TITLE__</h1>
+  <div class="meta" id="meta"></div></div>
+  <button class="btn" id="theme" aria-pressed="false">Light mode</button></div>
+</header>
+<main>
+  <div id="banners"></div>
+  <div class="layout">
+    <div>
+      <section class="card" id="prices">
+        <div class="card-head"><div><h2>Baseload price</h2><div class="unit" id="base-unit"></div></div><button class="btn icon copy" data-chart="c-base" title="Copy chart data (visible scenarios) for pasting into Excel" aria-label="Copy chart data"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span class="lbl"></span></button></div>
+        <div class="chart"><canvas id="c-base"></canvas></div>
+      </section>
+      <section class="card" id="tech">
+        <div class="card-head">
+          <div><h2 id="tech-title">Capture prices by technology</h2><div class="unit" id="tech-unit"></div></div>
+          <div class="head-ctrls"><button class="btn icon copy" data-chart="c-tech" title="Copy chart data (visible scenarios) for pasting into Excel" aria-label="Copy chart data"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span class="lbl"></span></button></div>
+        </div>
+        <div class="ctrl-rows"><div class="ctrl-row"><label class="ctrl-name" for="tech-metric">Chart data</label><select id="tech-metric"></select></div><div class="ctrl-row"><span class="ctrl-name">Line colour</span><span class="seg" role="group" aria-label="Line colour"><button class="btn" data-cm="scen">By scenario</button><button class="btn" data-cm="tech">By technology</button></span></div></div>
+        <div class="tabs" id="tech-tabs"></div>
+        <div class="chart"><canvas id="c-tech"></canvas></div>
+      </section>
+      <section class="card" id="cg">
+        <div class="card-head">
+          <div><h2 id="cg-title">Installed capacity</h2><div class="unit" id="cg-unit"></div></div>
+          <div class="head-ctrls"><button class="btn icon copy" data-chart="c-cg" title="Copy chart data (visible scenarios) for pasting into Excel" aria-label="Copy chart data"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span class="lbl"></span></button></div>
+        </div>
+        <div class="ctrl-rows">
+          <div class="ctrl-row"><span class="ctrl-name">Chart data</span><span class="seg" role="group" aria-label="Chart data"><button class="btn" data-cgm="capacity">Capacity</button><button class="btn" data-cgm="generation">Generation</button></span></div>
+          <div class="ctrl-row"><span class="ctrl-name">Chart type</span><span class="seg" role="group" aria-label="Chart type"><button class="btn" data-cgv="lines">All years, by single technology</button><button class="btn" data-cgv="mix">Single year, by all technology</button></span></div>
+          <div class="ctrl-row cg-lines-only"><span class="ctrl-name">Line colour</span><span class="seg" role="group" aria-label="Line colour"><button class="btn" data-cm="scen">By scenario</button><button class="btn" data-cm="tech">By technology</button></span></div>
+          <div class="ctrl-row cg-lines-only"><label class="ctrl-name" for="cg-tech">Technology</label><select id="cg-tech"></select></div>
+          <div class="ctrl-row year-row cg-mix-only"><label class="ctrl-name" for="cg-year">Year</label><input type="range" id="cg-year"><output id="cg-year-out"></output></div>
+        </div>
+        <div class="cg-note" id="cg-note"></div>
+        <div class="chart" id="cg-wrap"><canvas id="c-cg"></canvas></div>
+      </section>
+      <section class="card" id="more">
+        <h2>Compare another variable</h2>
+        <div class="unit">Any other annual system output, read from the same files.</div>
+        <div class="add-row"><select id="var-select"></select><button class="btn" id="var-add">Add chart</button></div>
+      </section>
+      <div id="extra"></div>
+      <footer>Source: Aurora Energy Research, Origin.</footer>
+    </div>
+    <aside class="side">
+      <section class="card">
+        <h2>Scenarios</h2>
+        <div class="unit" id="panel-help">Click: show/hide. Double-click: show only that scenario. Swatch: change colour.</div>
+        <button class="btn" id="toggle-all" style="margin-bottom:6px"></button>
+        <div id="zone-chips"></div>
+        <div id="legend"></div>
+        <button class="btn" id="reset" style="margin-top:8px">Reset colours</button>
+        <div class="ctrl-label">Line colour (technology charts)</div>
+        <div class="ctrl"><button class="btn" data-cm="scen">By scenario</button><button class="btn" data-cm="tech">By technology</button></div>
+        <div class="ctrl-label">Markers</div>
+        <div class="ctrl"><button class="btn on" data-mk="on">Shown</button><button class="btn" data-mk="off">Hidden</button></div>
+      </section>
+    </aside>
+  </div>
+</main>
+<script type="application/json" id="payload">__DATA_JSON__</script>
+<script>
+(function(){
+const D = JSON.parse(document.getElementById('payload').textContent);
+if (D.format==='columnar'){ // expand compact layout back into rows; values are unchanged
+  for (const k in D.system){ const c=D.system[k]; D.system[k]=c.years.map((y,i)=>{ const r={year:y}; D.system_columns.forEach((col,j)=>{ r[col]=c.cols[j][i]; }); return r; }); }
+  for (const k in D.technology){ for (const n in D.technology[k]){ const c=D.technology[k][n];
+    D.technology[k][n]=c.years.map((y,i)=>{ const r={year:y}; D.tech_metric_keys.forEach((m,j)=>{ r[m]=c.vals[j][i]; }); return r; }); } } }
+const banners = document.getElementById('banners');
+function banner(html, warn){ const d=document.createElement('div'); d.className='notice'+(warn?' warn':''); d.innerHTML=html; banners.appendChild(d); }
+if (typeof Chart === 'undefined'){ banner('<strong>Charts could not load.</strong> The embedded charting library did not run; try a current version of Chrome, Edge, Firefox or Safari.', true); return; }
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+banner('<strong>Lightweight annual comparison.</strong> Every value is read directly from Origin\u2019s annual (1y) output files. Nothing is calculated, converted or interpolated. Designed for comparing up to 24 scenarios (each price zone counts as one); charts are easiest to read with 8\u201310 or fewer. For monthly, quarterly or hourly views, use the Origin platform.');
+(D.warnings||[]).forEach(w => banner('<strong>Note.</strong> '+esc(w), true));
+if (D.skipped && D.skipped.length) banner('<strong>Skipped scenarios.</strong> These have not been launched or have no outputs, so there are no results to show: '+D.skipped.map(s=>esc(s.name)).join('; ')+'.', true);
+if (D.missing_files && D.missing_files.length) banner('<strong>Missing files.</strong> '+D.missing_files.map(esc).join('; ')+'.', true);
+
+const S = D.scenarios;
+const gk = s => s.group ? s.scenario_id+'|'+s.group : null;
+// Year coverage per scenario (from its own baseload rows). Used for notices and to avoid joining lines across unreported years.
+S.forEach(s=>{ const ys=(D.system[s.key]||[]).map(r=>r.year).sort((a,b)=>a-b); if(ys.length){ s._years=ys; s._y0=ys[0]; s._y1=ys[ys.length-1]; s._n=ys.length; s._sparse=ys.length/(s._y1-s._y0+1)<0.75; } });
+function namesOf(list){ const seen=new Map(); // zones of one scenario are named once: "Scenario (7 zones)"
+  list.forEach(x=>{ const k=(x.group&&x.zone)?'g|'+gk(x):'n|'+x.key; if(!seen.has(k)) seen.set(k,{x,c:0}); seen.get(k).c++; });
+  const n=[...seen.values()].map(o=>(o.x.group&&o.x.zone&&o.c>1)?o.x.group+' ('+o.c+' zones)':o.x.name);
+  return n.length>3 ? n.slice(0,2).join('; ')+' and '+(n.length-2)+' more' : n.join('; '); }
+(function(){ const withY=S.filter(s=>s._y0!=null); if(!withY.length) return;
+  const rng={}; withY.forEach(s=>{ const k=s._y0+'\u2013'+s._y1; (rng[k]=rng[k]||[]).push(s); });
+  const keys=Object.keys(rng);
+  if(keys.length>1) banner('<strong>Different year ranges.</strong> '+keys.map(k=>k+': '+esc(namesOf(rng[k]))).join(' \u00b7 ')+'. Each line covers only the years its scenario reports.');
+  const sp=withY.filter(s=>s._sparse); const gr={}; sp.forEach(s=>{ const k=s._years.join(','); (gr[k]=gr[k]||[]).push(s); });
+  Object.values(gr).forEach(g=>{ const s=g[0]; const yl=s._years.length<=8 ? s._years.join(', ') : s._years.slice(0,4).join(', ')+', \u2026, '+s._years[s._years.length-1];
+    banner('<strong>Not every year is reported.</strong> '+esc(namesOf(g))+' report'+(g.length>1?'':'s')+' '+s._n+' of '+(s._y1-s._y0+1)+' years between '+s._y0+' and '+s._y1+' ('+yl+'). Markers show the reported years. A straight line joins them for legibility only; it carries no data for the years in between, and hovering shows values for reported years only.'); });
+})();
+// Build a line over the scenario's own year span; years without a row become gaps, so lines are never joined across unreported years.
+// One shared year grid for every line (earliest to latest year across all scenarios). Every dataset therefore has the same
+// length and position i is always the same year, so the hover tooltip and vertical hover line pair like with like even when
+// scenarios start or end in different years. Years a scenario has no row for (before it starts, after it ends, or skipped
+// years) are gaps (null), so lines are never joined across unreported years.
+let GY0=Infinity, GY1=-Infinity;
+function _span(rows){ rows.forEach(r=>{ if(r.year<GY0) GY0=r.year; if(r.year>GY1) GY1=r.year; }); }
+Object.values(D.system).forEach(rows=>_span(rows));
+Object.values(D.technology).forEach(byName=>Object.values(byName).forEach(rows=>_span(rows)));
+function gapFill(rows,f){ if(!rows||!rows.length) return []; const by=new Map(rows.map(r=>[r.year,f(r)]));
+  const out=[]; for(let y=GY0;y<=GY1;y++) out.push({x:y,y:by.has(y)?by.get(y):null}); return out; }
+const defaults = {}; S.forEach(s => defaults[s.key] = s.color);
+const state = { hidden:new Set(), colorMode:'scen', markers:true, techMetric:null, techTab:'__all__', extras:[] };
+(function(){ const cnt={}; S.forEach(x=>{ const k=gk(x); if(k) cnt[k]=(cnt[k]||0)+1; }); const zoned=S.filter(x=>x.group&&x.zone&&cnt[gk(x)]>1);
+  const nScen=new Set(zoned.map(gk)).size + (S.length-zoned.length);
+  document.getElementById('meta').textContent = (zoned.length ? nScen+' scenario'+(nScen===1?'':'s')+' \u00b7 '+S.length+' zone lines' : S.length+' scenarios')+' \u00b7 annual granularity \u00b7 '+[...new Set(S.map(x=>x.currency))].join(', '); })();
+
+Chart.defaults.font.family = 'Lato, Segoe UI, sans-serif';
+const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function applyChartTheme(){ Chart.defaults.color = cssVar('--axis'); Chart.defaults.borderColor = cssVar('--axisline'); Chart.defaults.font.family = cssVar('--chart-font'); Chart.defaults.font.size = 12; }
+const gridColour = ctx => (ctx.tick && ctx.tick.value === 0) ? cssVar('--zero') : cssVar('--grid');
+applyChartTheme();
+const charts = {};
+const MONTHS = {jan:'Jan',feb:'Feb',mar:'Mar',apr:'Apr',may:'May',jun:'Jun',jul:'Jul',aug:'Aug',sep:'Sep',oct:'Oct',nov:'Nov',dec:'Dec'};
+function curInfo(code,type){ const m=/^([a-z]{3})(\d{4})([a-z]{3})?$/i.exec(code||''); if(!m) return null;
+  const fy = type==='FINANCIAL_YEAR_AVG';
+  return { base:m[1].toUpperCase(), basis: m[3] ? (MONTHS[m[3].toLowerCase()]||m[3])+' '+m[2]+' real' : (fy?'financial year ':'cal year ')+m[2]+' avg real' }; }
+function curType(code){ const x=S.find(q=>q.currency===code); return x?x.currency_type:undefined; }
+const curCodes = [...new Set(S.map(s=>s.currency))];
+const SAME_CUR = curCodes.length===1 ? curInfo(curCodes[0],curType(curCodes[0])) : null;
+const CUR_BASES = new Set(S.map(s=>(curInfo(s.currency,s.currency_type)||{}).base).filter(Boolean));
+function curLabel(s){ const c=curInfo(s.currency,s.currency_type); return c ? c.base+' ('+c.basis+')' : (s.currency||''); }
+function isPrice(u){ const m=/^([A-Z]{3})\/(.+)$/.exec(u||''); return m && CUR_BASES.has(m[1]) ? m[2] : null; }
+function axisTitle(units){ if(!units.length) return '';
+  if(units.every(u=>u==='-')) return 'Fraction as reported (unitless)';
+  const dens=[...new Set(units.map(isPrice))];
+  if(dens.length===1 && dens[0]) return SAME_CUR ? SAME_CUR.base+' per '+dens[0]+' ('+SAME_CUR.basis+')' : 'Currency per '+dens[0];
+  return units.join(' / '); }
+
+function marker(style, color){ const c=document.createElement('canvas'); c.width=28; c.height=14;
+  const ch = new Chart(c,{type:'line',data:{labels:[0,1,2],datasets:[{data:[null,1,null],pointStyle:style,pointRadius:4.5,borderColor:color,backgroundColor:color}]},options:{responsive:false,animation:false,events:[],plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false}}}}); return c; }
+
+function ds(s, label, points, color, extra){
+  return Object.assign({ label, data:points, borderColor:color, backgroundColor:color, borderWidth:2, hoverBorderWidth:3,
+    borderDash:s.dash||[], pointStyle:s.point_style, pointRadius: s._sparse?4:(state.markers?3:0), pointHoverRadius:6, pointHoverBorderWidth:2, pointHoverBorderColor:cssVar("--card"),
+    tension:0, spanGaps: !!s._sparse, _scen:s.name, _unit:'', _cur:curLabel(s), _curCode:s.currency, _curType:s.currency_type }, extra||{});
+}
+function tipVal(c){ if(c.parsed.y==null) return 'n/a'; const v=c.parsed.y.toLocaleString(undefined,{maximumFractionDigits:3}); const u=c.dataset._unit;
+  if(!u || u==='-') return v; const den=isPrice(u);
+  if(den && !SAME_CUR){ const ci=curInfo(c.dataset._curCode,c.dataset._curType); return v+' '+(ci? ci.base+' per '+den+' ('+ci.basis+')' : u); } return v+' '+u; }
+// Tooltip drawn as a page element rather than on the canvas: a canvas tooltip is clipped at the chart's edge, which hid the last
+// rows when 18 or more lines were hovered. This one can extend past the chart, always lists every row, and only splits into
+// columns when even the full window height cannot hold the list.
+const _mk={};
+function mkImg(style,color){ const k=style+'|'+color; if(!_mk[k]) _mk[k]=marker(style,color).toDataURL(); return _mk[k]; }
+let _tipEl=null;
+function boldValue(t){ const i=t.lastIndexOf(': '); return i<0 ? esc(t) : esc(t.slice(0,i+2))+'<b>'+esc(t.slice(i+2))+'</b>'; }
+function tipEl(){ if(!_tipEl){ _tipEl=document.createElement('div'); _tipEl.className='ctip'; document.body.appendChild(_tipEl); } return _tipEl; }
+window.addEventListener('scroll',()=>{ if(_tipEl) _tipEl.style.opacity='0'; },{passive:true});
+function htmlTooltip(ctx){
+  const t=ctx.tooltip, el=tipEl();
+  if(!t || t.opacity===0 || !t.body){ el.style.opacity='0'; return; }
+  const rows=t.body.map((b,i)=>{ const ps=(t.labelPointStyles&&t.labelPointStyles[i])||{pointStyle:'circle'}; const lc=(t.labelColors&&t.labelColors[i])||{};
+    return '<div class="ctip-row"><img src="'+mkImg(ps.pointStyle,lc.backgroundColor||lc.borderColor)+'" width="28" height="14" alt=""><span>'+boldValue(b.lines.join(' ').trim())+'</span></div>'; }).join('');
+  el.innerHTML=(t.title&&t.title.length?'<div class="ctip-title">'+esc(t.title.join(' '))+'</div>':'')+'<div class="ctip-rows">'+rows+'</div>';
+  const box=el.querySelector('.ctip-rows'); box.style.columnCount=1; el.style.opacity='1'; el.style.left='0px'; el.style.top='0px';
+  const room=window.innerHeight-16; if(el.offsetHeight>room) box.style.columnCount=Math.min(5,Math.ceil(el.offsetHeight/room));
+  const w=el.offsetWidth, h=el.offsetHeight, r=ctx.chart.canvas.getBoundingClientRect(), cx=r.left+t.caretX, cy=r.top+t.caretY;
+  let x=cx+16; if(x+w>window.innerWidth-8) x=cx-16-w; x=Math.max(8,x);
+  const y=Math.max(8,Math.min(cy-h/2,window.innerHeight-h-8));
+  el.style.left=x+'px'; el.style.top=y+'px';
+}
+function opts(unit){
+  return { responsive:true, maintainAspectRatio:false, animation:false, interaction:{mode:'index',intersect:false},
+    plugins:{ legend:{display:false}, tooltip:{ enabled:false, external:htmlTooltip, usePointStyle:true, boxWidth:9, boxHeight:9, boxPadding:5, filter:c=>c.parsed.y!=null, itemSort:(a,b)=>b.parsed.y-a.parsed.y,
+      callbacks:{ title:i=>i.length?String(i[0].parsed.x):'', label:c=>' '+c.dataset.label+': '+tipVal(c),
+        labelPointStyle:c=>({pointStyle:c.dataset.pointStyle, rotation:0}) } } },
+    scales:{ x:{type:'linear',ticks:{stepSize:1,maxRotation:0,autoSkip:true,autoSkipPadding:12,callback:v=>String(v)},grid:{display:false}}, y:{title:{display:!!unit,text:unit},grid:{color:gridColour}} } };
+}
+function draw(id, datasets, unit){ if(charts[id]) charts[id].destroy(); const el=document.getElementById(id); if(!el) return;
+  charts[id] = new Chart(el,{type:'line',data:{datasets},options:opts(unit)}); }
+const visible = () => S.filter(s=>!state.hidden.has(s.key));
+
+function unitsFor(col){ return [...new Set(visible().map(s=>(D.system_units[s.key]||{})[col]).filter(Boolean))]; }
+function unitFor(col){ return axisTitle(unitsFor(col)); }
+function sysSets(col){ return visible().filter(s=>D.system[s.key]).map(s=>ds(s, s.name,
+  gapFill(D.system[s.key], r=>r[col]), s.color, {_unit:(D.system_units[s.key]||{})[col]||''})); }
+
+function drawBase(){ document.getElementById('base-unit').textContent = unitFor('Baseload price');
+  draw('c-base', sysSets('Baseload price'), unitFor('Baseload price')); }
+
+const METRIC_LABEL = {capture_curtailed:'Capture price curtailed-below-zero', capture_uncurtailed:'Uncurtailed capture price', curtailment_rate:'Curtailment rate below zero'};
+const metrics = Object.keys(METRIC_LABEL).filter(m => (D.tech_available[m]||[]).length);
+const msel = document.getElementById('tech-metric');
+metrics.forEach(m => { const o=document.createElement('option'); o.value=m; o.textContent=METRIC_LABEL[m]; msel.appendChild(o); });
+state.techMetric = metrics[0] || null;
+msel.onchange = () => { state.techMetric = msel.value; state.techTab='__all__'; renderTabs(); drawTech(); };
+
+function techColours(series){ // single-technology tabs: group colour. "All technologies": sub-technologies use their subgroup colour.
+  const col={}; series.forEach(n=>{ const m=D.tech_series_meta[n];
+    col[n] = (state.techTab==='__all__' && m.subgroup && m.subgroup!==m.group) ? m.subgroup_color : m.color; });
+  return col; }
+function renderTabs(){ const t=document.getElementById('tech-tabs'); t.innerHTML='';
+  if(!state.techMetric){ return; }
+  ['__all__', ...D.tech_available[state.techMetric]].forEach(n=>{ const b=document.createElement('button');
+    b.className='tab'+(state.techTab===n?' active':''); b.textContent = n==='__all__'?'All technologies':n.replace(' | ',' \u203a ');
+    b.onclick=()=>{ state.techTab=n; renderTabs(); drawTech(); }; t.appendChild(b); }); }
+function drawTech(){ const m=state.techMetric;
+  if(!m){ document.getElementById('c-tech').parentElement.innerHTML='<div class="empty">No technology in these scenarios reports this output.</div>'; return; }
+  document.getElementById('tech-title').textContent = METRIC_LABEL[m];
+  const units=axisTitle([...new Set(visible().map(s=>(D.tech_units[s.key]||{})[m]).filter(Boolean))]);
+  document.getElementById('tech-unit').textContent = units + (state.techTab==='__all__'&&state.colorMode==='tech'?' \u00b7 colour = technology, marker = scenario':'');
+  const series = state.techTab==='__all__' ? D.tech_available[m] : [state.techTab];
+  const col = techColours(series); const sets=[];
+  series.forEach(n => visible().forEach(s => { const rows=(D.technology[s.key]||{})[n]; if(!rows) return;
+    const c = state.colorMode==='tech' ? col[n] : s.color;
+    sets.push(ds(s, (series.length>1? n.replace(' | ',' \u203a ')+' \u2014 ':'')+s.name, gapFill(rows, r=>r[m]), c, {_unit:(D.tech_units[s.key]||{})[m]||''})); }));
+  draw('c-tech', sets, units); }
+
+// Capacity and generation
+const CG_LABEL={capacity:'Installed capacity',generation:'Generation'};
+const cg={metric:'capacity', view:'lines', tab:null, year:null};
+const cgYears=[...new Set(S.flatMap(s=>Object.values(D.technology[s.key]||{}).flatMap(r=>r.map(x=>x.year))))].sort((a,b)=>a-b);
+const ysl=document.getElementById('cg-year');
+const yearSets=S.map(s=>new Set(Object.values(D.technology[s.key]||{}).flatMap(r=>r.map(x=>x.year))));
+const commonYears=cgYears.filter(y=>yearSets.every(ys=>ys.has(y)));
+if(cgYears.length){ ysl.min=cgYears[0]; ysl.max=cgYears[cgYears.length-1]; ysl.step=1; cg.year=commonYears.length?commonYears[0]:cgYears[0]; ysl.value=cg.year; }
+ysl.oninput=()=>{ cg.year=+ysl.value; drawCG(); };
+function cgSeries(){ return (D.tech_available[cg.metric]||[]); }
+function cgVal(s,n,y){ const r=((D.technology[s.key]||{})[n]||[]).find(x=>x.year===y); return r?r[cg.metric]:null; }
+function syncCG(){ document.querySelectorAll('[data-cgm]').forEach(b=>b.classList.toggle('on',b.dataset.cgm===cg.metric));
+  document.querySelectorAll('[data-cgv]').forEach(b=>b.classList.toggle('on',b.dataset.cgv===cg.view));
+  document.getElementById('cg').classList.toggle('mix',cg.view==='mix'); }
+document.querySelectorAll('[data-cgm]').forEach(b=>b.onclick=()=>{ cg.metric=b.dataset.cgm; if(!cgSeries().includes(cg.tab)) cg.tab=null; syncCG(); renderCGTabs(); drawCG(); });
+document.querySelectorAll('[data-cgv]').forEach(b=>b.onclick=()=>{ cg.view=b.dataset.cgv; syncCG(); drawCG(); });
+const cgSel=document.getElementById('cg-tech'); cgSel.onchange=()=>{ cg.tab=cgSel.value; drawCG(); };
+function renderCGTabs(){ cgSel.innerHTML=''; const ser=cgSeries(); if(!cg.tab) cg.tab=ser[0]||null;
+  ser.forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=n.replace(' | ',' \u203a '); cgSel.appendChild(o); }); if(cg.tab) cgSel.value=cg.tab; }
+function mixColour(n){ const m=D.tech_series_meta[n]; return (m.subgroup && m.subgroup!==m.group) ? m.subgroup_color : m.color; }
+function drawCG(){ const vis=visible(); const units=axisTitle([...new Set(vis.map(s=>(D.tech_units[s.key]||{})[cg.metric]).filter(Boolean))]);
+  const wrap=document.getElementById('cg-wrap'); const note=document.getElementById('cg-note');
+  document.getElementById('cg-title').textContent=CG_LABEL[cg.metric]; note.textContent=''; note.title='';
+  if(!vis.length){ if(charts['c-cg']){charts['c-cg'].destroy(); delete charts['c-cg'];} wrap.style.height='80px'; document.getElementById('cg-unit').textContent=''; note.textContent='No scenarios selected. Use "Select all scenarios" in the Scenarios panel.'; return; }
+  if(!cgSeries().length){ if(charts['c-cg']){charts['c-cg'].destroy(); delete charts['c-cg'];} wrap.style.height='80px'; document.getElementById('cg-unit').textContent=''; note.textContent='No technology reports this output in these scenarios.'; return; }
+  if(cg.view==='lines'){
+    wrap.style.height='300px';
+    document.getElementById('cg-unit').textContent=units;
+    const n=cg.tab, col=D.tech_series_meta[n].color;
+    const sets=vis.map(s=>{ const rows=(D.technology[s.key]||{})[n]; return rows? ds(s, s.name, gapFill(rows, r=>r[cg.metric]), state.colorMode==='tech'?col:s.color, {_unit:(D.tech_units[s.key]||{})[cg.metric]||''}) : null; }).filter(Boolean);
+    const allZero=sets.length && sets.every(d=>d.data.every(p=>p.y===0||p.y==null)) && sets.some(d=>d.data.some(p=>p.y===0));
+    if(allZero) note.textContent='All values for this technology are 0 in every year shown, in every visible scenario.';
+    else if(sets.length>1){ const sig=d=>JSON.stringify(d.data.map(p=>p.y)); const groups={}; sets.forEach(d=>{ (groups[sig(d)]=groups[sig(d)]||[]).push(d.label); });
+      const dup=Object.values(groups).filter(g=>g.length>1);
+      if(dup.length===1 && dup[0].length===sets.length) note.textContent='All '+sets.length+' visible scenarios report identical values for this technology, so their lines sit on top of each other.';
+      else if(dup.length){ const n=dup.reduce((t,g)=>t+g.length,0); note.textContent=n+' of '+sets.length+' visible scenarios share identical values with at least one other, so some lines overlap. Hover here for the list, or hover the chart to see every value.';
+        note.title=dup.map(g=>'\u2022 '+g.join(', ')).join('\n'); } }
+    draw('c-cg', sets, units);
+  } else {
+    document.getElementById('cg-year-out').textContent=cg.year;
+    document.getElementById('cg-unit').textContent=units+' \u00b7 '+cg.year;
+    wrap.style.height=Math.max(300, vis.length*30+150)+'px';
+    const hasData=s=>cgSeries().some(n=>cgVal(s,n,cg.year)!=null);
+    const withData=vis.filter(hasData), noData=vis.filter(s=>!hasData(s));
+    const techs=cgSeries().filter(n=>withData.some(s=>{ const v=cgVal(s,n,cg.year); return v!=null && v!==0; }));
+    const unitSrc=(withData[0]||vis[0]).key;
+    const sets=techs.map(n=>({label:n.replace(' | ',' \u203a '), data:vis.map(s=>cgVal(s,n,cg.year)), backgroundColor:mixColour(n), borderColor:cssVar('--card'), borderWidth:1, _unit:(D.tech_units[unitSrc]||{})[cg.metric]||''}));
+    const negative=sets.some(d=>d.data.some(v=>v!=null&&v<0));
+    const zeroTechs=cgSeries().filter(n=>!techs.includes(n)).map(n=>n.replace(' | ',' \u203a '));
+    const parts=[];
+    if(noData.length) parts.push('No data for '+cg.year+': '+namesOf(noData)+'.');
+    if(negative) parts.push('Negative values (for example net imports or storage charging, where reported) are drawn to the left of zero.');
+    if(zeroTechs.length) parts.push('Not drawn in '+cg.year+' (0, or not reported, in every scenario that has data): '+zeroTechs.join(', ')+'.');
+    note.textContent=parts.join(' ');
+    if(charts['c-cg']) charts['c-cg'].destroy();
+    charts['c-cg']=new Chart(document.getElementById('c-cg'),{type:'bar',data:{labels:vis.map(s=>hasData(s)?s.name:s.name+' \u2014 no data for '+cg.year),datasets:sets},
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:false,interaction:{mode:'index',axis:'y',intersect:false},
+        plugins:{legend:{position:'bottom',labels:{usePointStyle:true,pointStyle:'rect',boxWidth:10,boxHeight:10,padding:12}},
+          tooltip:{enabled:false,external:htmlTooltip,usePointStyle:true,boxWidth:9,boxHeight:9,boxPadding:5,itemSort:(a,b)=>(b.parsed.x||0)-(a.parsed.x||0),filter:i=>i.parsed.x!=null&&i.parsed.x!==0,
+            callbacks:{label:c=>' '+c.dataset.label+': '+c.parsed.x.toLocaleString(undefined,{maximumFractionDigits:3})+' '+c.dataset._unit,labelPointStyle:()=>({pointStyle:'rect',rotation:0})}}},
+        scales:{x:{stacked:true,title:{display:!!units,text:units},grid:{color:gridColour}},y:{stacked:true,grid:{display:false},ticks:{autoSkip:false}}}}});
+    charts['c-cg']._names=vis.map(s=>s.name);
+  } }
+
+// Compare another variable
+const CATS = {'Electricity prices':['Baseload price','Off peak price','On peak price','Wholesale market price','Balancing market price'],
+  'Spreads':['spread'],'Demand':['demand'],'Emissions':['Carbon intensity','emissions'],'Capacity market':['Capacity market price'],
+  'Commodity prices':['Gas price','Coal price','Carbon price']};
+function catOf(c){ for(const [k,v] of Object.entries(CATS)) if(v.some(p=>c.toLowerCase().includes(p.toLowerCase()))) return k; return 'Other'; }
+const vsel=document.getElementById('var-select'); const groups={};
+D.system_columns.filter(c=>c!=='Baseload price' && S.some(s=>(D.system[s.key]||[]).some(r=>r[c]!=null))).forEach(c=>{ (groups[catOf(c)]=groups[catOf(c)]||[]).push(c); });
+Object.entries(groups).forEach(([g,cols])=>{ const og=document.createElement('optgroup'); og.label=g;
+  cols.forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; og.appendChild(o); }); vsel.appendChild(og); });
+document.getElementById('var-add').onclick=()=>{ const c=vsel.value; if(!c||state.extras.includes(c)) return; state.extras.push(c); addExtra(c); };
+function addExtra(c){ const id='c-x-'+state.extras.indexOf(c); const card=document.createElement('section'); card.className='card'; card.dataset.col=c;
+  card.innerHTML='<div class="card-head"><div><h2>'+esc(c)+'</h2><div class="unit">'+esc(unitFor(c))+'</div></div><div class="head-ctrls">'+'<button class="btn icon copy" data-chart="'+id+'" title="Copy chart data (visible scenarios) for pasting into Excel" aria-label="Copy chart data"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span class="lbl"></span></button>'+'<button class="btn x" title="Remove">\u00d7</button></div></div><div class="chart"><canvas id="'+id+'"></canvas></div>';
+  card.querySelector('.x').onclick=()=>{ charts[id]&&charts[id].destroy(); delete charts[id]; state.extras=state.extras.filter(x=>x!==c); card.remove(); };
+  document.getElementById('extra').appendChild(card); draw(id, sysSets(c), unitFor(c)); card.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+function drawExtras(){ document.querySelectorAll('#extra .card').forEach(card=>{ const c=card.dataset.col; card.querySelector('.unit').textContent=unitFor(c); draw(card.querySelector('canvas').id, sysSets(c), unitFor(c)); }); }
+
+// Legend
+function renderLegend(){ const L=document.getElementById('legend'); L.innerHTML='';
+  const gcount={}; S.forEach(s=>{ const k=gk(s); if(k) gcount[k]=(gcount[k]||0)+1; });
+  const isGrouped = s => !!(s.group && s.zone && gcount[gk(s)]>1);
+  const zoneN={}; S.filter(isGrouped).forEach(s=>{ zoneN[s.zone]=(zoneN[s.zone]||0)+1; });
+  const chipZones=Object.keys(zoneN).filter(z=>zoneN[z]>1);
+  const zc=document.getElementById('zone-chips'); zc.innerHTML='';
+  if(chipZones.length){ const lab=document.createElement('div'); lab.className='zlabel'; lab.textContent='Same zone in every scenario (click to show/hide)'; zc.appendChild(lab);
+    const box=document.createElement('div'); box.className='zchips';
+    chipZones.forEach(z=>{ const mem=S.filter(x=>x.zone===z); const b=document.createElement('button'); b.className='btn'+(mem.every(x=>!state.hidden.has(x.key))?' on':''); b.textContent=z;
+      b.onclick=()=>{ const allVis=mem.every(x=>!state.hidden.has(x.key)); mem.forEach(x=>allVis?state.hidden.add(x.key):state.hidden.delete(x.key)); redrawAll(true); }; box.appendChild(b); });
+    zc.appendChild(box); }
+  document.getElementById('panel-help').textContent='Click: show/hide. Double-click: show only that scenario. Swatch: change colour.'+(S.some(isGrouped)?' A heading shows or hides all its zones.':'');
+  let lastG=null;
+  S.forEach(s=>{ const g=isGrouped(s);
+    if(g && gk(s)!==lastG){ lastG=gk(s); const mem=S.filter(x=>gk(x)===lastG); const h=document.createElement('div'); h.className='lgroup'+(mem.every(x=>state.hidden.has(x.key))?' off':'');
+      const t=document.createElement('span'); t.className='lname'; t.textContent=s.group; t.title=s.group;
+      const hid=document.createElement('span'); hid.className='lid'; hid.textContent=s.scenario_id; hid.title='Scenario ID (click to select, then copy)'; hid.onclick=e=>e.stopPropagation();
+      h.append(t,hid); h.onclick=()=>{ const allVis=mem.every(x=>!state.hidden.has(x.key)); mem.forEach(x=>allVis?state.hidden.add(x.key):state.hidden.delete(x.key)); redrawAll(true); }; L.appendChild(h); }
+    else if(!g) lastG=null;
+    const row=document.createElement('div'); row.className='legend-row'+(g?' zrow':'')+(state.hidden.has(s.key)?' off':'');
+    const sw=document.createElement('input'); sw.type='color'; sw.value=s.color; sw.title='Change colour';
+    sw.onclick=e=>e.stopPropagation(); sw.oninput=e=>{ s.color=e.target.value; redrawAll(false); };
+    const nm=document.createElement('span'); nm.className='lname'; nm.textContent=g?s.zone:s.name; nm.title=s.name;
+    const col=document.createElement('div'); col.className='lcol'; col.append(nm);
+    if(!g){ const id=document.createElement('span'); id.className='lid'; id.textContent=s.scenario_id; id.title='Scenario ID (click to select, then copy)'; id.onclick=e=>e.stopPropagation(); col.append(id); }
+    row.append(sw, marker(s.point_style, cssVar('--text-2')), col);
+    row.onclick=e=>{ if(e.detail>=2){ state.hidden=new Set(S.filter(x=>x.key!==s.key).map(x=>x.key)); }  // double-click: show only this scenario
+      else { state.hidden.has(s.key)?state.hidden.delete(s.key):state.hidden.add(s.key); }
+      redrawAll(true); };
+    L.appendChild(row); });
+  const all=S.every(s=>!state.hidden.has(s.key)); const tb=document.getElementById('toggle-all'); tb.textContent=all?'Deselect all scenarios':'Select all scenarios';
+  tb.onclick=()=>{ state.hidden = all ? new Set(S.map(s=>s.key)) : new Set(); redrawAll(true); }; }
+function redrawAll(legend){ if(legend) renderLegend(); drawBase(); drawTech(); drawCG(); drawExtras(); }
+const tbtn=document.getElementById('theme');
+tbtn.onclick=()=>{ const light=document.documentElement.dataset.theme!=='light';
+  if(light) document.documentElement.dataset.theme='light'; else delete document.documentElement.dataset.theme;
+  tbtn.textContent = light?'Dark mode':'Light mode'; tbtn.setAttribute('aria-pressed', String(light));
+  applyChartTheme(); redrawAll(true); };
+document.getElementById('reset').onclick=()=>{ S.forEach(s=>s.color=defaults[s.key]); redrawAll(true); };
+function syncColourToggles(){ document.querySelectorAll('[data-cm]').forEach(x=>{ const on=x.dataset.cm===state.colorMode; x.classList.toggle('on',on); x.setAttribute('aria-pressed',String(on)); }); }
+document.querySelectorAll('[data-cm]').forEach(b=>b.onclick=()=>{ state.colorMode=b.dataset.cm; syncColourToggles(); drawTech(); drawCG(); });
+syncColourToggles();
+// Copy chart data as tab-separated text (pastes straight into Excel). Uses the values already drawn; nothing is recalculated.
+function chartTSV(id){ const ch=charts[id]; if(!ch) return '';
+  if(ch.config.type==='bar'){ const card=document.getElementById(id).closest('.card'); const t=card.querySelector('h2').textContent+' \u2014 '+card.querySelector('.unit').textContent;
+    const L=[t, ['Scenario',...ch.data.datasets.map(d=>d.label)].join('\t')];
+    (ch._names||ch.data.labels).forEach((lab,i)=>L.push([lab,...ch.data.datasets.map(d=>d.data[i]==null?'':d.data[i])].join('\t')));
+    L.push('Source: Aurora Energy Research, Origin (annual values as reported)'); return L.join('\n'); }
+  const card=document.getElementById(id).closest('.card'); const title=card.querySelector('h2').textContent; const unit=card.querySelector('.unit').textContent;
+  const sets=ch.data.datasets; const years=[...new Set(sets.flatMap(d=>d.data.map(p=>p.x)))].sort((a,b)=>a-b);
+  const lookup=sets.map(d=>new Map(d.data.map(p=>[p.x,p.y])));
+  const lines=[title+(unit?' \u2014 '+unit:''), ['Year',...sets.map(d=>{ const den=isPrice(d._unit), ci=curInfo(d._curCode,d._curType); return d.label+(SAME_CUR||!den||!ci?'':' \u2014 '+ci.base+' per '+den+' ('+ci.basis+')'); })].join('\t')];
+  years.forEach(y=>lines.push([y,...lookup.map(m=>{ const v=m.get(y); return v==null?'':v; })].join('\t')));
+  lines.push('Source: Aurora Energy Research, Origin (annual values as reported)');
+  return lines.join('\n'); }
+async function copyText(t){ try{ await navigator.clipboard.writeText(t); return true; }catch(e){
+  const ta=document.createElement('textarea'); ta.value=t; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select();
+  let ok=false; try{ ok=document.execCommand('copy'); }catch(_){} ta.remove(); return ok; } }
+document.addEventListener('click', async e=>{ const b=e.target.closest('.copy'); if(!b) return;
+  const ok=await copyText(chartTSV(b.dataset.chart)); const l=b.querySelector('.lbl'); l.textContent=ok?'Copied':'Copy failed';
+  setTimeout(()=>{ l.textContent=''; },1600); });
+document.querySelectorAll('[data-mk]').forEach(b=>b.onclick=()=>{ state.markers=b.dataset.mk==='on'; document.querySelectorAll('[data-mk]').forEach(x=>x.classList.toggle('on',x===b)); redrawAll(false); });
+
+renderLegend(); renderTabs(); drawBase(); drawTech(); syncCG(); renderCGTabs(); drawCG();
+})();
+</script>
+</body>
+</html>
