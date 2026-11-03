@@ -24,7 +24,8 @@ Always begin from the relevant discovery call so region codes, granularities, cu
 | Battery/flex scenarios & cases: discover | `flexplorer_list_datasets` (regions + forecast scenarios + backcast benchmarks) -> `flexplorer_get_scenario` (its investment cases) -> `flexplorer_get_investment_case_options` (markets, currency options, columns, config) |
 | Battery/flex: pull a case, benchmark, or realised performance | `flexplorer_get_download_url` with `dataset` = `investment_case` / `backcast_benchmark` / `real_performance` |
 | Realised battery performance (leaderboards) | `flexplorer_get_leaderboard_options(region)` -> `flexplorer_get_download_url(dataset="real_performance", window=...)` |
-| Find a report / "what does Aurora think about X" | `content_list_content` (free-text `search` + `content_types` / `tag_ids` / `topic_ids` / `scenario` filters), `content_list_tags` to resolve tag/topic ids, `content_list_regions` / `content_get_region_content` for a region's set |
+| Answer from Aurora's research ("what does Aurora think about X") | `content_search` (semantic search over report pages - pass 2-4 short noun-phrase `queries`, not the raw question, plus `regions` from `content_list_regions`, `startYear` / `endYear` only when the user names a period, and `documentIds` to read around a known report), then cite by document title + `eos_url` |
+| Find, list or download a specific report | `content_list_content` (free-text `search` + `content_types` / `tag_ids` / `topic_ids` / `scenario` filters), `content_list_tags` to resolve tag/topic ids |
 | Read / download a report or its data book | `content_get_content` (full record) -> `content_get_content_downloads` (list files) -> `content_get_download_url` (signed URL; pick the xlsx data book with `file_type`), then fetch and read |
 
 ## Doing the analysis
