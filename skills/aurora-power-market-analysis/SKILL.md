@@ -18,13 +18,14 @@ Always begin from the relevant discovery call so region codes, granularities, cu
 | Which Aurora product fits a request | `catalog_list_products` (routing overview), `catalog_describe_products` (a product's tools) |
 | Realised prices / generation / demand: discover | `historical_list_regions` -> `historical_get_dataset_options` (data types, granularities, columns, years, URL templates) |
 | Realised data: pull a series | `historical_get_download_url` (presigned CSV), then compute locally |
-| Forward-looking scenarios: discover | `scenario_explorer_list_scenarios` (filter by region/name/publication month; market AND nodal come back together, told apart by `modelOutputType`) -> `scenario_explorer_get_scenario_options` (dataDefinitions, granularities, facts, years); `scenario_explorer_get_regions_and_currencies` for valid codes |
-| Forward-looking scenarios: pull a series | `scenario_explorer_get_output_download_url` (copy the exact `dataDefinitions` filename template; nodal files use the `{nodename}` placeholder + `node_name`), then compute locally |
-| Scenario comparison (Central vs High vs Low, quarter vs quarter) | pull each sensitivity with `scenario_explorer_get_output_download_url` and align on a shared period axis yourself |
+| Forward-looking scenarios: discover | `scenario_explorer_list_scenarios` (filter by region/name/publication month; market AND nodal come back together, told apart by `modelOutputType`) -> `scenario_explorer_get_scenario_options` (dataDefinitions, granularities, facts, years); `scenario_explorer_list_regions_and_currencies` for valid codes |
+| Forward-looking scenarios: pull a series | `scenario_explorer_get_download_url` (copy the exact `dataDefinitions` filename template; nodal files use the `{nodename}` placeholder + `node_name`), then compute locally |
+| Scenario comparison (Central vs High vs Low, quarter vs quarter) | pull each sensitivity with `scenario_explorer_get_download_url` and align on a shared period axis yourself |
 | Battery/flex scenarios & cases: discover | `flexplorer_list_datasets` (regions + forecast scenarios + backcast benchmarks) -> `flexplorer_get_scenario` (its investment cases) -> `flexplorer_get_investment_case_options` (markets, currency options, columns, config) |
 | Battery/flex: pull a case, benchmark, or realised performance | `flexplorer_get_download_url` with `dataset` = `investment_case` / `backcast_benchmark` / `real_performance` |
 | Realised battery performance (leaderboards) | `flexplorer_get_leaderboard_options(region)` -> `flexplorer_get_download_url(dataset="real_performance", window=...)` |
-| Find a report / "what does Aurora think about X" | `content_list_content` (free-text `search` + `content_types` / `tag_ids` / `topic_ids` / `scenario` filters), `content_list_tags` to resolve tag/topic ids, `content_list_regions` / `content_get_region_content` for a region's set |
+| Answer from Aurora's research ("what does Aurora think about X") | `content_search` (semantic search over report pages - pass 2-4 short noun-phrase `queries`, not the raw question, plus `regions` from `content_list_regions`, `startYear` / `endYear` only when the user names a period, and `documentIds` to read around a known report), then cite by document title + `eos_url` |
+| Find, list or download a specific report | `content_list_content` (free-text `search` + `content_types` / `tag_ids` / `topic_ids` / `scenario` filters), `content_list_tags` to resolve tag/topic ids |
 | Read / download a report or its data book | `content_get_content` (full record) -> `content_get_content_downloads` (list files) -> `content_get_download_url` (signed URL; pick the xlsx data book with `file_type`), then fetch and read |
 
 ## Doing the analysis

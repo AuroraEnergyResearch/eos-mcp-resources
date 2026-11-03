@@ -24,10 +24,10 @@ Satellites: **Monthly notes/indices** (`monthly`, selected markets, e.g. Monthly
 
 ## Naming conventions
 
-These help you phrase the content search, recognise the right report, and describe it to the user:
+These help you phrase the `content_list_content` title search, recognise the right report, and describe it to the user:
 
 - **Country token is usually the ADJECTIVE for European + LatAm markets**: Italian, Polish, German, Dutch, Belgian, Hungarian, Croatian, Serbian, Slovenian, Iberian, Chilean. **Noun for**: Great Britain (never "GB"), Japan, Australia, "Ireland I-SEM". **ISO acronym for the US**: ERCOT, MISO, CAISO, ISO-NE, PJM. **Region names**: Nordic (DK/FI/SE/NO in one report), Baltics (EE/LV/LT), Iberian (ES/PT), WEM (Western Australia - separate from NEM, H1/H2 cadence).
-- Naming is INCONSISTENT even within one market ("Chilean PRMF" but "Chile Flexible Energy Market Forecast"; "Australia PRMF" but "Australian MLF Forecast"; Flex is "Outlook" in DE/ISO-NE, "Forecast" elsewhere; some titles use "&" for "and"). If a sensible search returns nothing, retry the other country form (adjective vs noun) or drop the series' last word before concluding the report doesn't exist; the type/tag/topic filters narrow better than a longer free-text string.
+- Naming is INCONSISTENT even within one market ("Chilean PRMF" but "Chile Flexible Energy Market Forecast"; "Australia PRMF" but "Australian MLF Forecast"; Flex is "Outlook" in DE/ISO-NE, "Forecast" elsewhere; some titles use "&" for "and"). If a sensible `content_list_content` search returns nothing, retry the other country form (adjective vs noun) or drop the series' last word before concluding the report doesn't exist; the type/tag/topic filters narrow better than a longer free-text string.
 - **Content ids roll over every publication cycle** - re-resolve the id for the current cycle rather than reusing a remembered one.
 - Cadence: mostly quarterly with Q2/Q4 (or biannual) majors; WEM is H1/H2; monthlies monthly. "Latest" = newest publication date.
 - **Within a report**: prefer an exec summary for a fast read and the full report for depth; investment cases sit near the END of Flex/PRMF reports. Prefer an xlsx data book over scraping numbers from PDF text when charting report figures.
