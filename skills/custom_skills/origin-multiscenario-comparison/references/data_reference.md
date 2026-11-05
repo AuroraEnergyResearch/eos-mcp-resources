@@ -2,15 +2,6 @@
 
 ## Tools used (Aurora Energy Research connector)
 
-| Step | Tool | Notes |
-|---|---|---|
-| Find a project | `origin_list_projects(search=...)` | Returns project IDs. Use `search` to keep the result small. |
-| Find scenarios | `origin_list_scenarios(region=..., project_id=..., search=..., limit=...)` | `region` is mandatory. `search` is a literal case-insensitive substring of name/description. Paginate with `offset` / `next_offset`. |
-| Check outputs and currency | `origin_inspect_scenarios(requests=[{scenario_id, regions:[region]}])` | Returns `default_currency`, available `currency_codes`, years and download types. About 4k to 5k tokens per scenario (more when it exports many regions). Inspect every selected scenario: default currency years differ between scenarios in the same region. |
-| Get download links | `origin_get_output_downloads(requests=[...])` | Max 20 requests per call. Each request: `{kind:"scenario_data", scenario_id, region, download_type, granularity:"1y", currency}`. |
-
-Fields in each `origin_list_scenarios` record that matter here: `scenario_id`, `name`, `region`, `scenarioRunStatus` (`Complete` / `NotLaunched` / other), `scenarioOutputsAvailable`, `publishType` (`Published` / `Draft` / null for client-owned), `scenarioType` (`AURORA_SCENARIO` / `TENANTED_SCENARIO`), `project_id`.
-
 There is no `weatherYear` value in the list result. Weather Year scenarios are identified by the name suffix `(YYYY Weather Year)`, for example `Great Britain Q2 26 (2023 Weather Year)`.
 
 ## Download types used

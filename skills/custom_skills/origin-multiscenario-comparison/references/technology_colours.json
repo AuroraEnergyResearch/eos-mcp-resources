@@ -1,5 +1,5 @@
 {
-  "_source": "Aurora 'Technology groupings, orderings and colours' (Confluence page 4518379588). Rule: use the group colour when the Group has one; otherwise use the Subgroup colour; otherwise fall back to #838383 and report it.",
+  "_source": "Rule: use the group colour when the Group has one; otherwise use the Subgroup colour; otherwise fall back to #838383 and report it.",
   "group_order": ["Interconnectors", "DSR", "Battery storage", "Hydrogen peaker", "Gas / oil peaker", "Pumped storage", "Onshore wind", "Offshore wind", "Hydro", "BECCS", "Other RES", "Solar", "CSP", "Other thermal", "Hydrogen CCGT", "Gas CCS", "Gas CCGT", "Coal", "Lignite", "Peat", "Nuclear"],
   "group_colours": {
     "Interconnectors": "#DF5327",
