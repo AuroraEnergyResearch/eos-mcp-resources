@@ -11,9 +11,6 @@ Both at granularity `1y` only:
 - **`system`** (`{currency}-system-1y.csv`): one row per year, one column per output. First column `year`. Row 2 holds units; the currency appears in units such as `GBP/MWh`.
 - **`technology`** (`{currency}-technology-1y.csv`): one row per (Year, Group, Subgroup). Columns used: `Capacity` (GW), `Generation` (TWh), `Capture price curtailed below zero`, `Uncurtailed capture price`, `Curtailment rate below zero`. Interconnector and storage generation can be negative (net imports, charging) and is shown as reported.
 
-Do not use `technology-aggregated`; it has been seen to return an incomplete set of groups. Use `technology` and keep each (Group, Subgroup) pair as its own series.
-
-Files are gzip-compressed regardless of the `.csv` extension. Row 1 is column names, row 2 is units, data starts at row 3.
 
 `Curtailment rate below zero` is reported as a fraction with unit `-` (e.g. `0.015`). Show it as reported; do not multiply by 100.
 
